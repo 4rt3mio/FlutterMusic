@@ -30,7 +30,7 @@ class _AvatarState extends State<Avatar> {
             height: 150,
             color: Colors.grey,
             child: const Center(
-              child: Text('No Image'),
+              child: Text('Нет изображения'),
             ),
           )
         else
@@ -42,7 +42,7 @@ class _AvatarState extends State<Avatar> {
           ),
         ElevatedButton(
           onPressed: _isLoading ? null : _upload,
-          child: const Text('Upload'),
+          child: const Text('Загрузить'),
         ),
       ],
     );
@@ -87,7 +87,7 @@ class _AvatarState extends State<Avatar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Unexpected error occurred'),
+            content: const Text('Произошла непредвиденная ошибка'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

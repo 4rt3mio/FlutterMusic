@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hometask/ui/blocs/file_loader/file_loader_bloc.dart';
 import 'package:hometask/ui/widgets/account_page.dart';
 import 'package:hometask/ui/widgets/login_page.dart';
+import 'package:hometask/ui/widgets/main_page.dart';
 import 'package:hometask/ui/widgets/splash_page.dart';
 import 'package:hometask/ui/widgets/home_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,11 +26,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Supabase Flutter',
       theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Colors.transparent,
         primaryColor: Colors.green,
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.green,
-          ),
+        canvasColor: Colors.transparent,
+        appBarTheme: const AppBarTheme(
+          color: Color.fromRGBO(0, 128, 0, 0.8),
+        ),
+        textTheme: ThemeData.dark().textTheme.copyWith(
+          bodyLarge: const TextStyle(color: Colors.white),
+          bodyMedium: const TextStyle(color: Colors.white),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -48,6 +53,7 @@ class MyApp extends StatelessWidget {
           create: (context) => FileLoaderBloc(),
           child: const MyHomePage(),
         ),
+        '/main': (_) => const MainPage(),
       },
     );
   }

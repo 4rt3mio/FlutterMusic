@@ -37,7 +37,7 @@ class _AccountPageState extends State<AccountPage> {
       );
     } catch (error) {
       SnackBar(
-        content: const Text('Unexpected error occurred'),
+        content: const Text('Произошла непредвиденная ошибка'),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     } finally {
@@ -67,7 +67,7 @@ class _AccountPageState extends State<AccountPage> {
       await supabase.from('profiles').upsert(updates);
       if (mounted) {
         const SnackBar(
-          content: Text('Successfully updated profile!'),
+          content: Text('Профиль успешно обновлен!'),
         );
       }
     } on PostgrestException catch (error) {
@@ -77,7 +77,7 @@ class _AccountPageState extends State<AccountPage> {
       );
     } catch (error) {
       SnackBar(
-        content: const Text('Unexpected error occurred'),
+        content: const Text('Произошла непредвиденная ошибка'),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     } finally {
@@ -99,7 +99,7 @@ class _AccountPageState extends State<AccountPage> {
       );
     } catch (error) {
       SnackBar(
-        content: const Text('Unexpected error occurred'),
+        content: const Text('Произошла непредвиденная ошибка'),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     } finally {
@@ -119,7 +119,7 @@ class _AccountPageState extends State<AccountPage> {
       });
       if (mounted) {
         const SnackBar(
-          content: Text('Updated your profile image!'),
+          content: Text('Изображение вашего профиля обновлено!'),
         );
       }
     } on PostgrestException catch (error) {
@@ -129,7 +129,7 @@ class _AccountPageState extends State<AccountPage> {
       );
     } catch (error) {
       SnackBar(
-        content: const Text('Unexpected error occurred'),
+        content: const Text('Произошла непредвиденная ошибка'),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     }
@@ -162,40 +162,60 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: _loading
+      appBar: AppBar(title: const Text('Профиль')),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.green.shade800.withOpacity(0.8),
+              Colors.green.shade200.withOpacity(0.8),
+            ],
+          ),
+        ),
+        child: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-        children: [
-          Avatar(
-            imageUrl: _avatarUrl,
-            onUpload: _onUpload,
-          ),
-          const SizedBox(height: 18),
-          TextFormField(
-            controller: _usernameController,
-            decoration: const InputDecoration(labelText: 'User Name'),
-          ),
-          const SizedBox(height: 18),
-          TextFormField(
-            controller: _websiteController,
-            decoration: const InputDecoration(labelText: 'Website'),
-          ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: _loading ? null : _updateProfile,
-            child: Text(_loading ? 'Saving...' : 'Update'),
-          ),
-          const SizedBox(height: 18),
-          TextButton(onPressed: _signOut, child: const Text('Sign Out')),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: () => _goToHome(context),
-            child: const Text('Go to Home'),
-          ),
-        ],
-      ),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+          children: [
+              Avatar(
+                imageUrl: _avatarUrl,
+                onUpload: _onUpload,
+              ),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: 'Ваше имя'),
+              ),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _websiteController,
+                decoration: const InputDecoration(labelText: 'Статус'),
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton(
+                onPressed: _loading ? null : _updateProfile,
+                child: Text(_loading ? 'Сохранение...' : 'Обновить'),
+              ),
+              const SizedBox(height: 18),
+              TextButton(
+                onPressed: _signOut,
+                child: const Text(
+                  'Выход',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton(
+                onPressed: () => _goToHome(context),
+                child: const Text('Скачать треки'),
+              ),
+          ],
+        ),
+      )
     );
   }
 }

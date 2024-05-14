@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Check your email for a login link!')),
+          const SnackBar(content: Text('Проверьте свою электронную почту на наличие ссылки для входа!')),
         );
         _emailController.clear();
       }
@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (error) {
       SnackBar(
-        content: const Text('Unexpected error occurred'),
+        content: const Text('Произошла непредвиденная ошибка'),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     } finally {
@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
       final session = data.session;
       if (session != null) {
         _redirecting = true;
-        Navigator.of(context).pushReplacementNamed('/account');
+        Navigator.of(context).pushReplacementNamed('/main');
       }
     });
     super.initState();
@@ -75,23 +75,42 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-        children: [
-          const Text('Sign in via the magic link with your email below'),
-          const SizedBox(height: 18),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+      appBar: AppBar(title: const Text('Вход')),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.green.shade800.withOpacity(0.8),
+              Colors.green.shade200.withOpacity(0.8),
+            ],
           ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _signIn,
-            child: Text(_isLoading ? 'Loading' : 'Send Magic Link'),
-          ),
-        ],
-      ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+          children: [
+            const Text('Войдите в систему по волшебной ссылке, указав свой адрес электронной почты ниже.'),
+            const SizedBox(height: 18),
+            TextFormField(
+              controller: _emailController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _signIn,
+              child: Text(_isLoading ? 'Загрузка' : 'Отправить Magic Link'),
+            ),
+          ],
+        ),
+      )
     );
   }
 }
