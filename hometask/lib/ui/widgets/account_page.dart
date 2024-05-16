@@ -208,11 +208,11 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              /*const SizedBox(height: 18),
               ElevatedButton(
                 onPressed: () => _goToHome(context),
                 child: const Text('Скачать треки'),
-              ),
+              ),*/
           ],
         ),
       )

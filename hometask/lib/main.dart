@@ -4,6 +4,8 @@ import 'package:hometask/ui/blocs/file_loader/file_loader_bloc.dart';
 import 'package:hometask/ui/widgets/account_page.dart';
 import 'package:hometask/ui/widgets/login_page.dart';
 import 'package:hometask/ui/widgets/main_page.dart';
+import 'package:hometask/ui/widgets/playlist_screen.dart';
+import 'package:hometask/ui/widgets/song_page.dart';
 import 'package:hometask/ui/widgets/splash_page.dart';
 import 'package:hometask/ui/widgets/home_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,7 +47,6 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        // Splash page is needed to ensure that authentication and page loading works correctly
         '/': (_) => const SplashPage(),
         '/login': (_) => const LoginPage(),
         '/account': (_) => const AccountPage(),
@@ -54,6 +55,8 @@ class MyApp extends StatelessWidget {
           child: const MyHomePage(),
         ),
         '/main': (_) => const MainPage(),
+        '/song': (_) => const SongPage(),
+        '/playlist': (_) => const PlaylistScreen(),
       },
     );
   }

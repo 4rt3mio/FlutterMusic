@@ -62,7 +62,7 @@ class _PlaylistMusic extends StatelessWidget {
             shrinkWrap: true,
             padding: const EdgeInsets.only(top: 20),
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: playlists.length,
+            itemCount: playlists.length - 1,
             itemBuilder: ((context, index) {
               return PlaylistCard(playlist: playlists[index]);
             }),
@@ -148,6 +148,7 @@ class _DiscoverMusic extends StatelessWidget {
                 borderSide: BorderSide.none,
               ),
             ),
+            style: TextStyle(color: Colors.grey.shade800),
           ),
         ],
       ),
@@ -187,6 +188,14 @@ class _CustomNavBar extends StatelessWidget {
           label: 'Profile',
         ),
       ],
+      onTap: (index) {
+        if (index == 1) {
+          Navigator.of(context).pushNamed('/playlist', arguments: 'defolt');
+        }
+        if (index == 3) {
+          Navigator.of(context).pushNamed('/account');
+        }
+      },
     );
   }
 }

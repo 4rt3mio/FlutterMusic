@@ -13,7 +13,7 @@ class SongCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushReplacementNamed('/home');//изменить нужно
+        Navigator.of(context).pushNamed('/song', arguments: song);
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),
@@ -25,7 +25,7 @@ class SongCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15.0),
                 image: DecorationImage(
-                  image: AssetImage(
+                  image: NetworkImage(
                     song.coverUrl,
                   ),
                   fit: BoxFit.cover,

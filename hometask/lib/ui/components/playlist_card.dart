@@ -13,7 +13,7 @@ class PlaylistCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushReplacementNamed('/home');//изменить нужно
+        Navigator.of(context).pushNamed('/playlist', arguments: playlist);
       },
       child: Container(
         height: 75,

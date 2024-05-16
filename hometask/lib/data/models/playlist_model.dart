@@ -29,6 +29,11 @@ class Playlist {
       songs: Song.songs,
       imageUrl:
       'https://images.unsplash.com/photo-1594623930572-300a3011d9ae?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80',
+    ),
+    Playlist(
+      title: 'Любимые треки',
+      songs: Song.songs,
+      imageUrl: 'assets/default_pictures/plastinka.jpg',
     )
   ];
 }

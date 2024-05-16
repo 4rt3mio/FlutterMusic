@@ -22,12 +22,17 @@ class SectionHeader extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(
-          action,
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge!
-              .copyWith(color: Colors.white),
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).pushNamed('/playlist', arguments: 'defolt');
+          },
+          child: Text(
+            action,
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(color: Colors.white),
+          ),
         ),
       ],
     );
