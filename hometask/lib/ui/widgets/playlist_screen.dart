@@ -15,7 +15,7 @@ class PlaylistScreen extends StatelessWidget {
       isDefPlaylist = false;
     }
     else if (args == 'defolt') {
-      playlist = Playlist.playlists[3];
+      playlist = Playlist.playlists[Playlist.playlists.length - 1];
     }
 
     return Container(
@@ -62,12 +62,19 @@ class _PlaylistSongs extends StatelessWidget {
 
   final Playlist playlist;
 
+  String _formatDuration(int duration) {
+    Duration d = Duration(seconds: duration);
+    String minutes = d.inMinutes.toString().padLeft(2, '0');
+    String seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: playlist.songs.length,
+      itemCount: playlist.tracks.length,
       itemBuilder: (context, index) {
         return ListTile(
           leading: Text(
@@ -78,17 +85,24 @@ class _PlaylistSongs extends StatelessWidget {
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           title: Text(
-            playlist.songs[index].title,
+            playlist.tracks[index].title,
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge!
                 .copyWith(fontWeight: FontWeight.bold),
           ),
-          subtitle: Text('${playlist.songs[index].description} Тут мб длительность будет трека хзхз'),
+          subtitle: Text(
+              playlist.tracks[index].artist),
           trailing: const Icon(
             Icons.more_vert,
             color: Colors.white,
           ),
+          onTap: () {
+            Navigator.of(context).pushNamed('/song', arguments: {
+              'playlist': playlist,
+              'index': index,
+            });
+          },
         );
       },
     );

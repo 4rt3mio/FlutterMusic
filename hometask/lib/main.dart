@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
           create: (context) => FileLoaderBloc(),
           child: const MyHomePage(),
         ),
-        '/main': (_) => const MainPage(),
+        '/main': (_) => MainPage(),
         '/song': (_) => const SongPage(),
         '/playlist': (_) => const PlaylistScreen(),
       },

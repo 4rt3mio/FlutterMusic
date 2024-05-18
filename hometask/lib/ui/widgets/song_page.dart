@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
-import '../../data/models/song_model.dart';
+import '../../data/models/playlist_model.dart';
+import '../../data/models/track_model.dart'; // Changed to track_model.dart
 import '../components/player_buttons.dart';
 import '../components/seekbar.dart';
 
@@ -14,17 +15,21 @@ class SongPage extends StatefulWidget {
 
 class _SongPageState extends State<SongPage> {
   AudioPlayer audioPlayer = AudioPlayer();
-  late Song song;
+  late Track track;
+  late Playlist playlist;
+  late int index;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is Song) {
-      song = args;
+    if (args != null) {
+      playlist = (args as Map)['playlist'] as Playlist;
+      index = (args)['index'] as int;
+      track = playlist.tracks[index];
+      audioPlayer.setUrl(track.trackUrl);
     }
-    audioPlayer.setUrl(song.url);
   }
 
   @override
@@ -35,15 +40,15 @@ class _SongPageState extends State<SongPage> {
 
   Stream<SeekBarData> get _seekBarDataStream =>
       rxdart.Rx.combineLatest2<Duration, Duration?, SeekBarData>(
-          audioPlayer.positionStream, audioPlayer.durationStream, (
-          Duration position,
-          Duration? duration,
-          ) {
-        return SeekBarData(
-          position,
-          duration ?? Duration.zero,
-        );
-      });
+        audioPlayer.positionStream,
+        audioPlayer.durationStream,
+            (Duration position, Duration? duration) {
+          return SeekBarData(
+            position,
+            duration ?? Duration.zero,
+          );
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -66,14 +71,16 @@ class _SongPageState extends State<SongPage> {
         fit: StackFit.expand,
         children: [
           Image.network(
-            song.coverUrl,
+            track.coverUrl,
             fit: BoxFit.cover,
           ),
           const _BackgroundFilter(),
           _MusicPlayer(
-            song: song,
+            track: track,
             seekBarDataStream: _seekBarDataStream,
             audioPlayer: audioPlayer,
+            playlist: playlist,
+            index: index,
           ),
         ],
       ),
@@ -84,15 +91,19 @@ class _SongPageState extends State<SongPage> {
 class _MusicPlayer extends StatelessWidget {
   const _MusicPlayer({
     Key? key,
-    required this.song,
+    required this.track,
     required Stream<SeekBarData> seekBarDataStream,
     required this.audioPlayer,
+    required this.playlist,
+    required this.index,
   })  : _seekBarDataStream = seekBarDataStream,
         super(key: key);
 
-  final Song song;
+  final Track track;
   final Stream<SeekBarData> _seekBarDataStream;
   final AudioPlayer audioPlayer;
+  final Playlist playlist;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +117,7 @@ class _MusicPlayer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            song.title,
+            track.title,
             style: Theme.of(context).textTheme.headlineSmall!.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -114,12 +125,11 @@ class _MusicPlayer extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            song.description,
+            track.artist,
             maxLines: 2,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall!
-                .copyWith(color: Colors.white),
+            style: Theme.of(context).textTheme.bodySmall!.copyWith(
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 30),
           StreamBuilder<SeekBarData>(
@@ -133,7 +143,11 @@ class _MusicPlayer extends StatelessWidget {
               );
             },
           ),
-          PlayerButtons(audioPlayer: audioPlayer),
+          PlayerButtons(
+            audioPlayer: audioPlayer,
+            playlist: playlist,
+            index: index,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -172,18 +186,19 @@ class _BackgroundFilter extends StatelessWidget {
     return ShaderMask(
       shaderCallback: (rect) {
         return LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Colors.white.withOpacity(0.5),
-              Colors.white.withOpacity(0.0),
-            ],
-            stops: const [
-              0.0,
-              0.4,
-              0.6
-            ]).createShader(rect);
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white,
+            Colors.white.withOpacity(0.5),
+            Colors.white.withOpacity(0.0),
+          ],
+          stops: const [
+            0.0,
+            0.4,
+            0.6
+          ],
+        ).createShader(rect);
       },
       blendMode: BlendMode.dstOut,
       child: Container(

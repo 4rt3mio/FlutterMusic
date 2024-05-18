@@ -1,71 +1,85 @@
 import 'package:flutter/material.dart';
-import '../../data/models/song_model.dart';
+import '../../data/models/playlist_model.dart';
+import '../../data/models/track_model.dart';
 
 class SongCard extends StatelessWidget {
   const SongCard({
     Key? key,
-    required this.song,
+    required this.track,
   }) : super(key: key);
 
-  final Song song;
+  final Track track;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushNamed('/song', arguments: song);
+        final playlist = Playlist.playlists.last;
+        final index = playlist.tracks.indexWhere((t) => t == track);
+        Navigator.of(context).pushNamed('/song', arguments: {
+          'playlist': playlist,
+          'index': index,
+        });
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),
+        width: MediaQuery.of(context).size.width * 0.45,
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.45,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                image: DecorationImage(
-                  image: NetworkImage(
-                    song.coverUrl,
-                  ),
-                  fit: BoxFit.cover,
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15.0),
+              child: Image.network(
+                track.coverUrl,
+                width: MediaQuery.of(context).size.width * 0.45,
+                height: double.infinity,
+                fit: BoxFit.cover,
               ),
             ),
             Container(
               height: 50,
-              width: MediaQuery.of(context).size.width * 0.37,
+              width: MediaQuery.of(context).size.width * 0.45,
               margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15.0),
                 color: Colors.white.withOpacity(0.8),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        song.title,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            track.title,
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            track.artist,
+                            style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      Text(
-                        song.description,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const Icon(
-                    Icons.play_circle,
-                    color: Colors.green,
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: Icon(
+                      Icons.play_circle,
+                      color: Colors.green,
+                    ),
                   ),
                 ],
               ),

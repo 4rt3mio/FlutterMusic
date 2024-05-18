@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../data/models/playlist_model.dart';
+
 class PlayerButtons extends StatelessWidget {
   const PlayerButtons({
     Key? key,
     required this.audioPlayer,
+    required this.playlist,
+    required this.index,
   }) : super(key: key);
 
   final AudioPlayer audioPlayer;
+  final Playlist playlist;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +22,15 @@ class PlayerButtons extends StatelessWidget {
       children: [
         StreamBuilder<SequenceState?>(
           stream: audioPlayer.sequenceStateStream,
-          builder: (context, index) {
+          builder: (context, sequenceStateSnapshot) {
             return IconButton(
-              onPressed:
-              audioPlayer.hasPrevious ? audioPlayer.seekToPrevious : null,
+              onPressed: () {
+                final newIndex = (index == 0) ? (playlist.tracks.length - 1) : (index - 1);
+                Navigator.of(context).pushReplacementNamed('/song', arguments: {
+                  'playlist': playlist,
+                  'index': newIndex,
+                });
+              },
               iconSize: 45,
               icon: const Icon(
                 Icons.skip_previous,
@@ -81,9 +92,15 @@ class PlayerButtons extends StatelessWidget {
         ),
         StreamBuilder<SequenceState?>(
           stream: audioPlayer.sequenceStateStream,
-          builder: (context, index) {
+          builder: (context, sequenceStateSnapshot) {
             return IconButton(
-              onPressed: audioPlayer.hasNext ? audioPlayer.seekToNext : null,
+              onPressed: () {
+                final newIndex = (index + 1) % playlist.tracks.length;
+                Navigator.of(context).pushReplacementNamed('/song', arguments: {
+                  'playlist': playlist,
+                  'index': newIndex,
+                });
+              },
               iconSize: 45,
               icon: const Icon(
                 Icons.skip_next,

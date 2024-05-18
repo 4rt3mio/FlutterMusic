@@ -58,8 +58,8 @@ class _SeekBarState extends State<SeekBar> {
               overlayShape: const RoundSliderOverlayShape(
                 overlayRadius: 10,
               ),
-              activeTrackColor: Colors.white.withOpacity(0.2),
-              inactiveTrackColor: Colors.white,
+              activeTrackColor: Colors.white,
+              inactiveTrackColor: Colors.white.withOpacity(0.2),
               thumbColor: Colors.white,
               overlayColor: Colors.white,
             ),
@@ -95,7 +95,9 @@ class _SeekBarState extends State<SeekBar> {
             ),
           ),
         ),
-        Text(_formatDuration(widget.duration)),
+        Text(
+          _formatDuration(widget.duration),
+        ),
       ],
     );
   }

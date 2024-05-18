@@ -28,7 +28,14 @@ class PlaylistCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(15.0),
-              child: Image.network(
+              child: playlist.imageUrl.startsWith('http')
+                  ? Image.network(
+                playlist.imageUrl,
+                height: 50,
+                width: 50,
+                fit: BoxFit.cover,
+              )
+                  : Image.asset(
                 playlist.imageUrl,
                 height: 50,
                 width: 50,
@@ -49,7 +56,7 @@ class PlaylistCard extends StatelessWidget {
                         .copyWith(fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '${playlist.songs.length} songs',
+                    '${playlist.tracks.length} tracks',
                     maxLines: 2,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
