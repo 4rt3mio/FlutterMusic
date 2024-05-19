@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/playlist_model.dart';
 
-class PlaylistScreen extends StatelessWidget {
+class PlaylistScreen extends StatefulWidget {
   const PlaylistScreen({Key? key}) : super(key: key);
+
+  @override
+  State<PlaylistScreen> createState() => _PlaylistScreenState();
+}
+
+class _PlaylistScreenState extends State<PlaylistScreen> {
+  final GlobalKey<_PlaylistSongsState> _playlistSongsKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -13,8 +20,7 @@ class PlaylistScreen extends StatelessWidget {
     if (args is Playlist) {
       playlist = args;
       isDefPlaylist = false;
-    }
-    else if (args == 'defolt') {
+    } else if (args == 'defolt') {
       playlist = Playlist.playlists[Playlist.playlists.length - 1];
     }
 
@@ -43,8 +49,14 @@ class PlaylistScreen extends StatelessWidget {
               children: [
                 _PlaylistInformation(playlist: playlist),
                 const SizedBox(height: 30),
-                const _PlayOrShuffleSwitch(),
-                _PlaylistSongs(playlist: playlist),
+                _PlayOrShuffleSwitch(
+                  playlist: playlist,
+                  onShufflePressed: _onShufflePressed,
+                ),
+                _PlaylistSongs(
+                  key: _playlistSongsKey,
+                  playlist: playlist,
+                ),
               ],
             ),
           ),
@@ -52,9 +64,16 @@ class PlaylistScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _onShufflePressed(Playlist playlist) {
+    setState(() {
+      playlist.tracks.shuffle();
+      _playlistSongsKey.currentState?.setState(() {});
+    });
+  }
 }
 
-class _PlaylistSongs extends StatelessWidget {
+class _PlaylistSongs extends StatefulWidget {
   const _PlaylistSongs({
     Key? key,
     required this.playlist,
@@ -62,19 +81,17 @@ class _PlaylistSongs extends StatelessWidget {
 
   final Playlist playlist;
 
-  String _formatDuration(int duration) {
-    Duration d = Duration(seconds: duration);
-    String minutes = d.inMinutes.toString().padLeft(2, '0');
-    String seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
+  @override
+  State<_PlaylistSongs> createState() => _PlaylistSongsState();
+}
 
+class _PlaylistSongsState extends State<_PlaylistSongs> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: playlist.tracks.length,
+      itemCount: widget.playlist.tracks.length,
       itemBuilder: (context, index) {
         return ListTile(
           leading: Text(
@@ -85,21 +102,22 @@ class _PlaylistSongs extends StatelessWidget {
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           title: Text(
-            playlist.tracks[index].title,
+            widget.playlist.tracks[index].title,
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge!
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
-              playlist.tracks[index].artist),
+            widget.playlist.tracks[index].artist,
+          ),
           trailing: const Icon(
             Icons.more_vert,
             color: Colors.white,
           ),
           onTap: () {
             Navigator.of(context).pushNamed('/song', arguments: {
-              'playlist': playlist,
+              'playlist': widget.playlist,
               'index': index,
             });
           },
@@ -110,8 +128,13 @@ class _PlaylistSongs extends StatelessWidget {
 }
 
 class _PlayOrShuffleSwitch extends StatefulWidget {
+  final Playlist playlist;
+  final Function(Playlist) onShufflePressed;
+
   const _PlayOrShuffleSwitch({
     Key? key,
+    required this.playlist,
+    required this.onShufflePressed,
   }) : super(key: key);
 
   @override
@@ -158,12 +181,20 @@ class _PlayOrShuffleSwitchState extends State<_PlayOrShuffleSwitch> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Center(
-                        child: Text(
-                          'Включить трек',
-                          style: TextStyle(
-                            color: isPlay ? Colors.white : Colors.green,
-                            fontSize: 17,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/song', arguments: {
+                            'playlist': widget.playlist,
+                            'index': 0,
+                          });
+                        },
+                        child: Center(
+                          child: Text(
+                            'Включить трек',
+                            style: TextStyle(
+                              color: isPlay ? Colors.white : Colors.green,
+                              fontSize: 17,
+                            ),
                           ),
                         ),
                       ),
@@ -179,12 +210,17 @@ class _PlayOrShuffleSwitchState extends State<_PlayOrShuffleSwitch> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Center(
-                        child: Text(
-                          'Перемешать',
-                          style: TextStyle(
-                            color: isPlay ? Colors.green : Colors.white,
-                            fontSize: 17,
+                      GestureDetector(
+                        onTap: () {
+                          widget.onShufflePressed(widget.playlist);
+                        },
+                        child: Center(
+                          child: Text(
+                            'Перемешать',
+                            style: TextStyle(
+                              color: isPlay ? Colors.green : Colors.white,
+                              fontSize: 17,
+                            ),
                           ),
                         ),
                       ),

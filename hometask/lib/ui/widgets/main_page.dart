@@ -15,12 +15,31 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final List<Track> tracks = [];
+  final List<String> trackUuids = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _getTracks(context);
+    _initTrackUuids();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    final needsReload = args['reload'] as bool? ?? false;
+    if (needsReload) {
+      _getTracks(context);
+    }
+  }
+
+  Future<void> _initTrackUuids() async {
+    final uuids = await _getTrackUuids();
+    setState(() {
+      trackUuids.addAll(uuids);
+    });
   }
 
   Future<void> _getTracks(BuildContext context) async {
@@ -50,10 +69,21 @@ class _MainPageState extends State<MainPage> {
       });
     }
   }
+  Future<List<String>> _getTrackUuids() async {
+    try {
+      final userId = supabase.auth.currentSession!.user.id;
+      final data = await supabase.from('profiles').select('track_uuids').eq('id', userId).single();
+      final trackUuids = (data['track_uuids'] as List<dynamic>).map((uuid) => uuid.toString()).toList();
+      return trackUuids;
+    } catch (error) {
+      return [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     List<Track> ARtracks = [];
+    List<Track> FTtracks = [];
     List<Track> PPtracks = [];
     List<Track> RBtracks = [];
     List<Track> TEtracks = [];
@@ -94,6 +124,9 @@ class _MainPageState extends State<MainPage> {
       else if (tracks[i].genre == 'Hip-Hop') {
         HHtracks.add(tracks[i]);
       }
+      if (trackUuids.contains(tracks[i].trackId)) {
+        FTtracks.add(tracks[i]);
+      }
     }
     Playlist.playlists[0].tracks = RBtracks;
     Playlist.playlists[1].tracks = HHtracks;
@@ -105,7 +138,7 @@ class _MainPageState extends State<MainPage> {
     Playlist.playlists[7].tracks = CRtracks;
     Playlist.playlists[8].tracks = FPtracks;
     Playlist.playlists[9].tracks = PPtracks;
-    Playlist.playlists[10].tracks = tracks;
+    Playlist.playlists[10].tracks = FTtracks;
     List<Playlist> playlists = Playlist.playlists;
     return Container(
       decoration: BoxDecoration(
@@ -129,8 +162,8 @@ class _MainPageState extends State<MainPage> {
             : SingleChildScrollView(
           child: Column(
             children: [
-              const _DiscoverMusic(),
-              _TrendingMusic(tracks: tracks),
+              _DiscoverMusic(tracks: tracks),
+              _TrendingMusic(tracks: FTtracks),
               _PlaylistMusic(playlists: playlists),
             ],
           ),
@@ -217,8 +250,11 @@ class _TrendingMusic extends StatelessWidget {
 }
 
 class _DiscoverMusic extends StatelessWidget {
+  final List<Track> tracks;
+
   const _DiscoverMusic({
     Key? key,
+    required this.tracks,
   }) : super(key: key);
 
   @override
@@ -236,23 +272,30 @@ class _DiscoverMusic extends StatelessWidget {
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          TextFormField(
-            decoration: InputDecoration(
-              isDense: true,
-              filled: true,
-              fillColor: Colors.white,
-              hintText: 'Искать трек',
-              hintStyle: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(color: Colors.grey.shade400),
-              prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15.0),
-                borderSide: BorderSide.none,
+          InkWell(
+            onTap: () {
+              Navigator.of(context).pushNamed('/searchPage', arguments: tracks);
+            },
+            child: IgnorePointer(
+              child: TextFormField(
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Искать трек',
+                  hintStyle: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(color: Colors.grey.shade400),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: TextStyle(color: Colors.grey.shade800),
               ),
             ),
-            style: TextStyle(color: Colors.grey.shade800),
           ),
         ],
       ),
@@ -295,6 +338,13 @@ class _CustomNavBar extends StatelessWidget {
       onTap: (index) {
         if (index == 1) {
           Navigator.of(context).pushNamed('/playlist', arguments: 'defolt');
+        }
+        if (index == 2) {
+          final playlist = Playlist.playlists.last;
+          Navigator.of(context).pushNamed('/song', arguments: {
+            'playlist': playlist,
+            'index': 0,
+          });
         }
         if (index == 3) {
           Navigator.of(context).pushNamed('/account');

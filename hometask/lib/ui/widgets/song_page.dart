@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/models/playlist_model.dart';
-import '../../data/models/track_model.dart'; // Changed to track_model.dart
+import '../../data/models/track_model.dart';
+import '../../main.dart';
 import '../components/player_buttons.dart';
 import '../components/seekbar.dart';
 
@@ -18,6 +20,7 @@ class _SongPageState extends State<SongPage> {
   late Track track;
   late Playlist playlist;
   late int index;
+  final isFavoriteNotifier = ValueNotifier<bool>(false); // Initialize the ValueNotifier
 
   @override
   void didChangeDependencies() {
@@ -29,6 +32,20 @@ class _SongPageState extends State<SongPage> {
       index = (args)['index'] as int;
       track = playlist.tracks[index];
       audioPlayer.setUrl(track.trackUrl);
+      _checkIfFavorite(); // Check if the track is favorite
+    }
+  }
+
+  Future<void> _checkIfFavorite() async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+      final currentData = await supabase.from('profiles').select('track_uuids').eq('id', userId).single();
+      final List<String> currentUuids = (currentData['track_uuids'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      setState(() {
+        isFavoriteNotifier.value = currentUuids.contains(track.trackId); // Set the value based on whether trackId is in currentUuids
+      });
+    } catch (error) {
+      print('Error checking if track is favorite: $error');
     }
   }
 
@@ -62,7 +79,14 @@ class _SongPageState extends State<SongPage> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/main',
+                  (route) => false,
+              arguments: {
+                'reload': true,
+              },
+            );
           },
         ),
       ),
@@ -81,6 +105,7 @@ class _SongPageState extends State<SongPage> {
             audioPlayer: audioPlayer,
             playlist: playlist,
             index: index,
+            isFavoriteNotifier: isFavoriteNotifier, // Pass the isFavoriteNotifier to _MusicPlayer
           ),
         ],
       ),
@@ -96,6 +121,7 @@ class _MusicPlayer extends StatelessWidget {
     required this.audioPlayer,
     required this.playlist,
     required this.index,
+    required this.isFavoriteNotifier, // Add isFavoriteNotifier argument
   })  : _seekBarDataStream = seekBarDataStream,
         super(key: key);
 
@@ -104,6 +130,59 @@ class _MusicPlayer extends StatelessWidget {
   final AudioPlayer audioPlayer;
   final Playlist playlist;
   final int index;
+  final ValueNotifier<bool> isFavoriteNotifier; // Declare isFavoriteNotifier
+
+  Future<void> _addTrackUuid(String uuid) async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      final currentData = await supabase.from('profiles').select('track_uuids').eq('id', userId).single();
+      final List<String> currentUuids = (currentData['track_uuids'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+
+      if (!currentUuids.contains(uuid)) {
+        final List<String> updatedUuids = [...currentUuids, uuid];
+
+        await supabase.from('profiles').upsert({
+          'id': userId,
+          'track_uuids': updatedUuids,
+        });
+
+        print('UUID трека успешно добавлен в ваш профиль!');
+      } else {
+        print('Трек уже существует в вашем профиле');
+      }
+    } on PostgrestException catch (error) {
+      print('Ошибка при добавлении UUID трека: ${error.message}');
+    } catch (error) {
+      print('Произошла непредвиденная ошибка: $error');
+    }
+  }
+
+  Future<void> _removeTrackUuid(String uuid) async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      final currentData = await supabase.from('profiles').select('track_uuids').eq('id', userId).single();
+      final List<String> currentUuids = (currentData['track_uuids'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+
+      if (currentUuids.contains(uuid)) {
+        final List<String> updatedUuids = List<String>.from(currentUuids)..remove(uuid);
+
+        await supabase.from('profiles').upsert({
+          'id': userId,
+          'track_uuids': updatedUuids,
+        });
+
+        print('UUID трека успешно удален из вашего профиля!');
+      } else {
+        print('Трек не найден в вашем профиле');
+      }
+    } on PostgrestException catch (error) {
+      print('Ошибка при удалении UUID трека: ${error.message}');
+    } catch (error) {
+      print('Произошла непредвиденная ошибка: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,18 +233,43 @@ class _MusicPlayer extends StatelessWidget {
             children: [
               IconButton(
                 iconSize: 35,
-                onPressed: () {},
+                onPressed: () {
+                  audioPlayer.seek(Duration.zero);
+                  audioPlayer.play();
+                },
                 icon: const Icon(
-                  Icons.favorite_outline,
+                  Icons.autorenew_rounded,
                   color: Colors.white,
                 ),
               ),
               IconButton(
                 iconSize: 35,
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.add,
-                  color: Colors.white,
+                onPressed: () async {
+                  try {
+                    if (!isFavoriteNotifier.value) { // Check if the track is not a favorite
+                      await _addTrackUuid(track.trackId);
+                      isFavoriteNotifier.value = true;
+                    } else { // If the track is already a favorite, remove it
+                      await _removeTrackUuid(track.trackId);
+                      isFavoriteNotifier.value = false;
+                    }
+                  } catch (error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Ошибка при добавлении трека в избранное: $error'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  }
+                },
+                icon: ValueListenableBuilder<bool>(
+                  valueListenable: isFavoriteNotifier,
+                  builder: (context, isFavorite, child) {
+                    return Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_outline,
+                      color: Colors.white,
+                    );
+                  },
                 ),
               ),
             ],
